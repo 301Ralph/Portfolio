@@ -27,7 +27,12 @@
         .heading-serif {
             font-family: 'Playfair Display', Georgia, serif;
             font-weight: 700;
-            letter-spacing: -0.025em;
+            letter-spacing: 0;
+        }
+
+        .heading-serif.tracking-tight,
+        .heading-serif.tracking-tighter {
+            letter-spacing: 0 !important;
         }
 
         .luxury-bg { background-color: #0f0f0f; }
@@ -80,16 +85,40 @@
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
+            left: 0;
             width: 40%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(212,175,55,0.6), transparent);
             animation: goldSweep 3s infinite;
         }
         @keyframes goldSweep {
-            0% { left: -100%; }
-            50% { left: 150%; }
-            100% { left: -100%; }
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(260%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0f0f0f;
+            transition: opacity 0.6s ease;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-top-color: #d4af37;
+            border-radius: 999px;
+            animation: loaderSpin 1s linear infinite;
+        }
+
+        @keyframes loaderSpin {
+            to { transform: rotate(360deg); }
         }
 
         .typing-indicator {
@@ -134,12 +163,110 @@
             transform: translateY(0);
         }
 
-        .skill-icon {
-            transition: transform 0.4s cubic-bezier(0.23, 1.0, 0.32, 1);
-            box-shadow: 0 10px 25px -8px rgb(212 175 55 / 0.3);
+        .skill-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 9.75rem;
+            transition: transform 0.3s cubic-bezier(0.23, 1.0, 0.32, 1), border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
         }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--brand, #d4af37) 34%, transparent), transparent 62%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-6px);
+            border-color: color-mix(in srgb, var(--brand, #d4af37) 46%, transparent);
+            box-shadow: 0 22px 45px -28px color-mix(in srgb, var(--brand, #d4af37) 70%, transparent);
+        }
+
+        .skill-card:hover::before {
+            opacity: 1;
+        }
+
+        .skill-icon {
+            position: relative;
+            background: color-mix(in srgb, var(--brand, #d4af37) 15%, #111111);
+            border: 1px solid color-mix(in srgb, var(--brand, #d4af37) 45%, transparent);
+            transition: transform 0.4s cubic-bezier(0.23, 1.0, 0.32, 1), box-shadow 0.3s ease;
+            box-shadow: 0 10px 25px -8px color-mix(in srgb, var(--brand, #d4af37) 55%, transparent);
+            z-index: 1;
+        }
+
         .skill-card:hover .skill-icon {
-            transform: scale(1.1) rotate(5deg);
+            transform: translateY(-3px) scale(1.06);
+        }
+
+        .skill-logo {
+            width: 3rem;
+            height: 3rem;
+            object-fit: contain;
+        }
+
+        .monochrome-logo {
+            filter: brightness(0) invert(1);
+        }
+
+        #back-to-top {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(12px);
+        }
+
+        #back-to-top.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        #chatbot-window {
+            max-width: calc(100vw - 2rem);
+        }
+
+        @media (max-width: 640px) {
+            html,
+            body {
+                overflow-x: hidden;
+            }
+
+            .heading-serif.text-6xl {
+                font-size: 2.25rem !important;
+                line-height: 1.1 !important;
+            }
+
+            .heading-serif.text-7xl {
+                font-size: 3.25rem !important;
+                line-height: 1.04 !important;
+            }
+
+            #chatbot-window {
+                right: 1rem;
+                bottom: 5.5rem;
+                width: calc(100vw - 2rem);
+                max-height: calc(100dvh - 7rem);
+            }
+
+            #chat-messages {
+                height: clamp(10rem, calc(100dvh - 20rem), 20rem);
+            }
+
+            #back-to-top {
+                right: 5rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 1ms !important;
+                scroll-behavior: auto !important;
+                transition-duration: 1ms !important;
+            }
         }
     </style>
 </head>
@@ -179,7 +306,7 @@
             </p>
             
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button onclick="enterPortfolio()" class="group glow-btn inline-flex items-center justify-center gap-x-3 px-10 py-4 rounded-full bg-[#d4af37] text-[#0f0f0f] font-semibold text-sm tracking-wider hover:bg-white transition-all duration-300">
+                <button id="enter-portfolio-btn" type="button" class="group glow-btn inline-flex items-center justify-center gap-x-3 px-10 py-4 rounded-full bg-[#d4af37] text-[#0f0f0f] font-semibold text-sm tracking-wider hover:bg-white transition-all duration-300">
                     <span>ENTER PORTFOLIO</span>
                     <i class="fas fa-arrow-right group-hover:translate-x-1 transition"></i>
                 </button>
@@ -230,7 +357,7 @@
                         </a>
                     </div>
                     
-                    <button id="mobile-menu-btn" class="md:hidden w-10 h-10 flex items-center justify-center text-[#d4af37]">
+                    <button id="mobile-menu-btn" type="button" aria-label="Open menu" aria-expanded="false" class="md:hidden w-10 h-10 flex items-center justify-center text-[#d4af37]">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
@@ -284,11 +411,11 @@
             <div class="text-center mb-16">
                 <span class="text-xs tracking-[3px] text-[#d4af37] font-medium">CHAPTER II</span>
                 <h2 class="mt-3 text-6xl heading-serif tracking-tight">Skills &amp; Technologies</h2>
-                <p class="mt-2 text-sm text-[#f5f5f0]/60">Hover over any skill for a 3D effect (replace images with your own 3D versions)</p>
+                <p class="mt-2 text-sm text-[#f5f5f0]/60 max-w-2xl mx-auto">A practical full-stack toolkit for responsive interfaces, backend logic, database workflows, and AI-assisted development.</p>
             </div>
-            
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
+
                 <!-- Frontend -->
                 <div>
                     <div class="flex items-center gap-x-3 mb-8">
@@ -297,38 +424,52 @@
                         </div>
                         <h3 class="text-3xl font-semibold category-header">Frontend</h3>
                     </div>
-                    
+
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 mb-5">
-                                <img src="images/html.png" alt="HTML5" class="w-12 h-12">
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #e34f26;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" alt="HTML5 logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">HTML5</span>
+                            <span class="relative z-[1] font-semibold text-base">HTML5</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 mb-5">
-                                <img src="images/css.png" alt="CSS3" class="w-12 h-12">
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #1572b6;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" alt="CSS3 logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">CSS3</span>
+                            <span class="relative z-[1] font-semibold text-base">CSS3</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 mb-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968292.png" alt="JavaScript" class="w-12 h-12">
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #f7df1e;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg" alt="JavaScript logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">JavaScript</span>
+                            <span class="relative z-[1] font-semibold text-base">JavaScript</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-sky-400 to-blue-500 mb-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968332.png" alt="jQuery" class="w-12 h-12">
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #0769ad;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jquery/jquery-original.svg" alt="jQuery logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">jQuery</span>
+                            <span class="relative z-[1] font-semibold text-base">jQuery</span>
+                        </div>
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #7952b3;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/bootstrap/bootstrap-original.svg" alt="Bootstrap logo" class="skill-logo" loading="lazy" width="48" height="48">
+                            </div>
+                            <span class="relative z-[1] font-semibold text-base">Bootstrap</span>
+                        </div>
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #38bdf8;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg" alt="Tailwind CSS logo" class="skill-logo" loading="lazy" width="48" height="48">
+                            </div>
+                            <span class="relative z-[1] font-semibold text-base">Tailwind CSS</span>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Backend -->
                 <div>
                     <div class="flex items-center gap-x-3 mb-8">
@@ -337,38 +478,38 @@
                         </div>
                         <h3 class="text-3xl font-semibold category-header">Backend</h3>
                     </div>
-                    
+
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 mb-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968332.png" alt="PHP" class="w-12 h-12">
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #777bb4;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/php/php-original.svg" alt="PHP logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">PHP</span>
+                            <span class="relative z-[1] font-semibold text-base">PHP</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-black text-white border border-white/20 mb-5">
-                                <span class="font-bold text-3xl">L</span>
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #ff2d20;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/laravel/laravel-original.svg" alt="Laravel logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">Laravel</span>
+                            <span class="relative z-[1] font-semibold text-base">Laravel</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-yellow-500 text-black mb-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968350.png" alt="Python" class="w-12 h-12">
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #3776ab;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">Python</span>
+                            <span class="relative z-[1] font-semibold text-base">Python</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-red-600 text-white mb-5">
-                                <span class="font-bold text-3xl">Java</span>
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #ed8b00;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg" alt="Java logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">Java</span>
+                            <span class="relative z-[1] font-semibold text-base">Java</span>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Database & Tools -->
                 <div>
                     <div class="flex items-center gap-x-3 mb-8">
@@ -377,39 +518,46 @@
                         </div>
                         <h3 class="text-3xl font-semibold category-header">Database &amp; Tools</h3>
                     </div>
-                    
+
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-emerald-600 text-white mb-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968363.png" alt="MySQL" class="w-12 h-12">
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #4479a1;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg" alt="MySQL logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">MySQL</span>
+                            <span class="relative z-[1] font-semibold text-base">MySQL</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-orange-600 text-white mb-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968322.png" alt="Git" class="w-12 h-12">
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #f05032;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">Git &amp; GitHub</span>
+                            <span class="relative z-[1] font-semibold text-base">Git</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-blue-600 text-white mb-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968525.png" alt="VS Code" class="w-12 h-12">
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #ffffff;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.simpleicons.org/github/ffffff" alt="GitHub logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">VS Code</span>
+                            <span class="relative z-[1] font-semibold text-base">GitHub</span>
                         </div>
-                        
-                        <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-green-600 text-white mb-5">
-                                <span class="font-bold text-2xl">XAMPP</span>
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #007acc;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vscode/vscode-original.svg" alt="Visual Studio Code logo" class="skill-logo" loading="lazy" width="48" height="48">
                             </div>
-                            <span class="font-semibold text-lg">XAMPP</span>
+                            <span class="relative z-[1] font-semibold text-base">VS Code</span>
+                        </div>
+
+                        <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group col-span-2 sm:col-span-1" style="--brand: #fb7a24;">
+                            <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                                <img src="https://cdn.simpleicons.org/xampp/FB7A24" alt="XAMPP logo" class="skill-logo" loading="lazy" width="48" height="48">
+                            </div>
+                            <span class="relative z-[1] font-semibold text-base">XAMPP</span>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- AI Tools -->
             <div class="mt-16">
                 <div class="flex items-center gap-x-3 mb-8">
@@ -418,27 +566,41 @@
                     </div>
                     <h3 class="text-3xl font-semibold category-header">AI &amp; Productivity</h3>
                 </div>
-                
+
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                        <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 mb-5">
-                            <img src="https://cdn-icons-png.flaticon.com/512/5968/5968350.png" alt="Claude" class="w-12 h-12">
+                    <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #74aa9c;">
+                        <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                            <img src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/openai.svg" alt="ChatGPT logo" class="skill-logo monochrome-logo" loading="lazy" width="48" height="48">
                         </div>
-                        <span class="font-semibold text-lg">Claude</span>
+                        <span class="relative z-[1] font-semibold text-base">ChatGPT</span>
                     </div>
-                    
-                    <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                        <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 mb-5">
-                            <span class="font-bold text-3xl">Grok</span>
+
+                    <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #d97757;">
+                        <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                            <img src="https://cdn.simpleicons.org/claude/D97757" alt="Claude logo" class="skill-logo" loading="lazy" width="48" height="48">
                         </div>
-                        <span class="font-semibold text-lg">Grok</span>
+                        <span class="relative z-[1] font-semibold text-base">Claude</span>
                     </div>
-                    
-                    <div class="skill-card bg-[#111111] p-6 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group">
-                        <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 mb-5">
-                            <img src="https://cdn-icons-png.flaticon.com/512/5968/5968525.png" alt="ChatGPT" class="w-12 h-12">
+
+                    <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #ffffff;">
+                        <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                            <img src="https://cdn.simpleicons.org/githubcopilot/ffffff" alt="GitHub Copilot logo" class="skill-logo" loading="lazy" width="48" height="48">
                         </div>
-                        <span class="font-semibold text-lg">ChatGPT</span>
+                        <span class="relative z-[1] font-semibold text-base">GitHub Copilot</span>
+                    </div>
+
+                    <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group" style="--brand: #ffffff;">
+                        <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                            <img src="https://cdn.simpleicons.org/cursor/ffffff" alt="Cursor logo" class="skill-logo" loading="lazy" width="48" height="48">
+                        </div>
+                        <span class="relative z-[1] font-semibold text-base">Cursor AI</span>
+                    </div>
+
+                    <div class="skill-card bg-[#111111] p-5 rounded-3xl border border-[#d4af37]/10 flex flex-col items-center text-center group col-span-2 md:col-span-1" style="--brand: #0866ff;">
+                        <div class="skill-icon w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
+                            <img src="https://cdn.simpleicons.org/meta/0866ff" alt="Meta logo" class="skill-logo" loading="lazy" width="48" height="48">
+                        </div>
+                        <span class="relative z-[1] font-semibold text-base">Meta AI</span>
                     </div>
                 </div>
             </div>
@@ -523,7 +685,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 <!-- Project 1 -->
-                <div onclick="showProjectModal(0)" class="portfolio-item group cursor-pointer">
+                <div data-project-index="0" role="button" tabindex="0" class="portfolio-item group cursor-pointer">
                     <div class="premium-card bg-[#111111] rounded-3xl overflow-hidden border border-[#d4af37]/10">
                         <div class="relative">
                             <img src="https://picsum.photos/id/1015/600/420" alt="Little Steps" class="w-full h-auto">
@@ -543,7 +705,7 @@
                 </div>
                 
                 <!-- Project 2 -->
-                <div onclick="showProjectModal(1)" class="portfolio-item group cursor-pointer">
+                <div data-project-index="1" role="button" tabindex="0" class="portfolio-item group cursor-pointer">
                     <div class="premium-card bg-[#111111] rounded-3xl overflow-hidden border border-[#d4af37]/10">
                         <div class="relative">
                             <img src="https://picsum.photos/id/106/600/420" alt="Visitor's Log" class="w-full h-auto">
@@ -563,7 +725,7 @@
                 </div>
                 
                 <!-- Project 3: De Chavez Waterhaus -->
-                <div onclick="showProjectModal(2)" class="portfolio-item group cursor-pointer">
+                <div data-project-index="2" role="button" tabindex="0" class="portfolio-item group cursor-pointer">
                     <div class="premium-card bg-[#111111] rounded-3xl overflow-hidden border border-[#d4af37]/10">
                         <div class="relative">
                             <img src="images/dechavez.png" alt="De Chavez Waterhaus" class="w-full h-auto">
@@ -658,17 +820,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-xs tracking-widest mb-2 text-[#f5f5f0]/60" for="name">NAME</label>
-                                <input type="text" id="name" required class="luxury-input w-full bg-transparent border-b border-[#d4af37]/30 py-3 text-sm placeholder:text-[#f5f5f0]/40 focus:outline-none focus:border-[#d4af37]">
+                                <input type="text" id="name" name="name" autocomplete="name" required class="luxury-input w-full bg-transparent border-b border-[#d4af37]/30 py-3 text-sm placeholder:text-[#f5f5f0]/40 focus:outline-none focus:border-[#d4af37]">
                             </div>
                             <div>
                                 <label class="block text-xs tracking-widest mb-2 text-[#f5f5f0]/60" for="email">EMAIL</label>
-                                <input type="email" id="email" required class="luxury-input w-full bg-transparent border-b border-[#d4af37]/30 py-3 text-sm placeholder:text-[#f5f5f0]/40 focus:outline-none focus:border-[#d4af37]">
+                                <input type="email" id="email" name="email" autocomplete="email" required class="luxury-input w-full bg-transparent border-b border-[#d4af37]/30 py-3 text-sm placeholder:text-[#f5f5f0]/40 focus:outline-none focus:border-[#d4af37]">
                             </div>
                         </div>
                         
                         <div>
                             <label class="block text-xs tracking-widest mb-2 text-[#f5f5f0]/60" for="message">MESSAGE</label>
-                            <textarea id="message" required rows="5" class="luxury-input w-full bg-transparent border-b border-[#d4af37]/30 py-3 text-sm placeholder:text-[#f5f5f0]/40 focus:outline-none focus:border-[#d4af37]"></textarea>
+                            <textarea id="message" name="message" required maxlength="500" rows="5" class="luxury-input w-full bg-transparent border-b border-[#d4af37]/30 py-3 text-sm placeholder:text-[#f5f5f0]/40 focus:outline-none focus:border-[#d4af37]"></textarea>
                             <div class="flex justify-end mt-1">
                                 <span id="char-count" class="text-xs text-[#f5f5f0]/50">0 / 500</span>
                             </div>
@@ -693,15 +855,15 @@
     </div>
     
     <!-- BACK TO TOP -->
-    <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+    <button id="back-to-top" type="button"
             class="fixed bottom-8 right-24 w-12 h-12 bg-[#d4af37] text-[#0f0f0f] rounded-full flex items-center justify-center shadow-xl z-[80] hover:bg-white transition-all">
         <i class="fas fa-arrow-up"></i>
     </button>
     
     <!-- CHATBOT -->
-    <div id="chatbot-button" onclick="toggleChatbot()" class="fixed bottom-8 right-8 w-14 h-14 bg-[#d4af37] text-[#0f0f0f] rounded-full flex items-center justify-center cursor-pointer shadow-xl z-[90] hover:scale-110 transition-all">
+    <button id="chatbot-button" type="button" aria-label="Open Ralph's AI assistant" aria-expanded="false" aria-controls="chatbot-window" class="fixed bottom-8 right-8 w-14 h-14 bg-[#d4af37] text-[#0f0f0f] rounded-full flex items-center justify-center cursor-pointer shadow-xl z-[90] hover:scale-110 transition-all border-0">
         <i class="fas fa-robot text-2xl"></i>
-    </div>
+    </button>
     
     <div id="chatbot-window" class="hidden fixed bottom-24 right-8 w-80 md:w-96 bg-[#111111] rounded-3xl border border-[#d4af37]/20 shadow-2xl z-[100] overflow-hidden">
         
@@ -715,7 +877,7 @@
                     <div class="text-xs text-[#f5f5f0]/60">Smart AI • Only about Ralph</div>
                 </div>
             </div>
-            <button onclick="toggleChatbot()" class="text-[#d4af37] hover:text-white transition">
+            <button id="chatbot-close" type="button" class="text-[#d4af37] hover:text-white transition border-0 bg-transparent" aria-label="Close Ralph's AI assistant">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
@@ -730,8 +892,8 @@
             <div class="flex gap-x-2">
                 <input id="chat-input" type="text" placeholder="Ask anything about Ralph..." 
                        class="flex-1 bg-[#0f0f0f] border border-[#d4af37]/30 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#d4af37]" 
-                       onkeypress="if (event.key === 'Enter') sendMessage()">
-                <button onclick="sendMessage()" class="w-10 h-10 bg-[#d4af37] text-[#0f0f0f] rounded-full flex items-center justify-center hover:bg-white transition">
+                       autocomplete="off">
+                <button id="chat-send" type="button" class="w-10 h-10 bg-[#d4af37] text-[#0f0f0f] rounded-full flex items-center justify-center hover:bg-white transition border-0" aria-label="Send chat message">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
@@ -740,13 +902,13 @@
     </div>
     
     <!-- PROJECT MODAL -->
-    <div id="project-modal" onclick="if (event.target.id === 'project-modal') hideProjectModal()" class="hidden fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4">
+    <div id="project-modal" class="hidden fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4">
         
         <div class="modal relative w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#0f0f0f] rounded-3xl border border-[#d4af37]/20 luxury-shadow overflow-hidden">
             
             <div class="flex items-center justify-between px-8 py-5 border-b border-[#d4af37]/10 flex-shrink-0 bg-[#0f0f0f]">
                 <div id="modal-project-title" class="font-semibold text-2xl pr-4"></div>
-                <button onclick="hideProjectModal()" class="w-10 h-10 flex items-center justify-center text-[#d4af37] hover:bg-white/5 rounded-full transition">
+                <button id="modal-close" type="button" class="w-10 h-10 flex items-center justify-center text-[#d4af37] hover:bg-white/5 rounded-full transition border-0 bg-transparent" aria-label="Close project details">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
@@ -776,10 +938,10 @@
                         </div>
                         
                         <div class="pt-2 flex flex-col gap-3">
-                            <a id="modal-live-link" href="#" target="_blank" class="inline-flex items-center justify-center gap-x-2 px-6 py-3 text-sm font-medium rounded-2xl border border-[#d4af37] hover:bg-[#d4af37] hover:text-[#0f0f0f]">
+                            <a id="modal-live-link" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-x-2 px-6 py-3 text-sm font-medium rounded-2xl border border-[#d4af37] hover:bg-[#d4af37] hover:text-[#0f0f0f]">
                                 <span>View Live Demo</span>
                             </a>
-                            <a id="modal-github-link" href="#" target="_blank" class="inline-flex items-center justify-center gap-x-2 px-6 py-3 text-sm font-medium rounded-2xl border border-white/20 hover:bg-white/5">
+                            <a id="modal-github-link" href="#" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-x-2 px-6 py-3 text-sm font-medium rounded-2xl border border-white/20 hover:bg-white/5">
                                 <span>View Source Code</span>
                             </a>
                         </div>
@@ -790,9 +952,8 @@
     </div>
     
     <script>
-        // ==================== GROQ API CONFIGURATION ====================
-        const GROQ_API_KEY = ""; 
-        
+        // ==================== AI ASSISTANT CONFIGURATION ====================
+
         const SYSTEM_PROMPT = `You are Ralph Aian Escote's personal AI assistant named "Ralph's Assistant".
 
 STRICT RULES:
@@ -824,6 +985,13 @@ IMPORTANT FORMATTING:
 
         let lastMessage = "";
         let spamCount = 0;
+        let chatLoading = false;
+
+        const QUICK_REPLIES = [
+            { label: "About Ralph", text: "Tell me about Ralph Aian Escote" },
+            { label: "Skills", text: "What are Ralph's technical skills?" },
+            { label: "Projects", text: "What projects has Ralph worked on?" }
+        ];
 
         function initializeTailwind() {
             tailwind.config = { theme: { extend: {} } };
@@ -866,7 +1034,8 @@ IMPORTANT FORMATTING:
                 navbar.classList.toggle('nav-scrolled', window.scrollY > 50);
                 
                 const backToTop = document.getElementById('back-to-top');
-                if (window.scrollY > 600) {
+                const portfolioIsOpen = !document.getElementById('main-portfolio').classList.contains('hidden');
+                if (portfolioIsOpen && window.scrollY > 600) {
                     backToTop.classList.add('show');
                 } else {
                     backToTop.classList.remove('show');
@@ -875,6 +1044,13 @@ IMPORTANT FORMATTING:
             
             const mobileBtn = document.getElementById('mobile-menu-btn');
             mobileBtn.addEventListener('click', () => {
+                const existingMenu = document.getElementById('mobile-menu');
+                if (existingMenu) {
+                    existingMenu.remove();
+                    mobileBtn.setAttribute('aria-expanded', 'false');
+                    return;
+                }
+
                 const nav = document.createElement('div');
                 nav.id = 'mobile-menu';
                 nav.className = `fixed inset-0 bg-[#0f0f0f]/95 z-[60] flex flex-col items-center justify-center text-center`;
@@ -887,12 +1063,20 @@ IMPORTANT FORMATTING:
                         <a href="#education" class="hover:text-[#d4af37]">Education</a>
                         <a href="#contact" class="hover:text-[#d4af37]">Contact</a>
                     </div>
-                    <button class="absolute top-8 right-8 text-3xl text-[#d4af37]" onclick="this.parentElement.remove()">
+                    <button id="mobile-menu-close" type="button" class="absolute top-8 right-8 text-3xl text-[#d4af37] bg-transparent border-0" aria-label="Close menu">
                         <i class="fas fa-times"></i>
                     </button>
                 `;
                 document.body.appendChild(nav);
-                nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => nav.remove()));
+                mobileBtn.setAttribute('aria-expanded', 'true');
+
+                const closeMenu = () => {
+                    nav.remove();
+                    mobileBtn.setAttribute('aria-expanded', 'false');
+                };
+
+                nav.querySelector('#mobile-menu-close').addEventListener('click', closeMenu);
+                nav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
             });
         }
         
@@ -920,19 +1104,23 @@ IMPORTANT FORMATTING:
         
         function toggleChatbot() {
             const windowEl = document.getElementById('chatbot-window');
+            const chatbotButton = document.getElementById('chatbot-button');
             chatOpen = !chatOpen;
             
             if (chatOpen) {
                 windowEl.classList.remove('hidden');
                 windowEl.style.display = 'block';
+                chatbotButton.setAttribute('aria-expanded', 'true');
                 
                 const messages = document.getElementById('chat-messages');
                 if (messages.children.length === 0) {
                     addBotMessage("Hello! I'm Ralph's AI assistant. Feel free to ask me anything about Ralph.");
                     showQuickReplies();
                 }
+                document.getElementById('chat-input').focus();
             } else {
                 windowEl.style.display = 'none';
+                chatbotButton.setAttribute('aria-expanded', 'false');
             }
         }
         
@@ -940,14 +1128,16 @@ IMPORTANT FORMATTING:
             const messages = document.getElementById('chat-messages');
             const msgDiv = document.createElement('div');
             msgDiv.className = 'chat-message flex gap-x-3';
-            msgDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-[#d4af37] flex-shrink-0 flex items-center justify-center">
-                    <i class="fas fa-robot text-[#0f0f0f] text-sm"></i>
-                </div>
-                <div class="bg-[#1a1a1a] rounded-2xl rounded-tl-none px-4 py-3 text-sm max-w-[78%] whitespace-pre-line">
-                    ${text}
-                </div>
-            `;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'w-8 h-8 rounded-full bg-[#d4af37] flex-shrink-0 flex items-center justify-center';
+            avatar.innerHTML = '<i class="fas fa-robot text-[#0f0f0f] text-sm" aria-hidden="true"></i>';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bg-[#1a1a1a] rounded-2xl rounded-tl-none px-4 py-3 text-sm max-w-[78%] whitespace-pre-line';
+            bubble.textContent = text;
+
+            msgDiv.append(avatar, bubble);
             messages.appendChild(msgDiv);
             messages.scrollTop = messages.scrollHeight;
         }
@@ -956,25 +1146,31 @@ IMPORTANT FORMATTING:
             const messages = document.getElementById('chat-messages');
             const msgDiv = document.createElement('div');
             msgDiv.className = 'chat-message flex justify-end';
-            msgDiv.innerHTML = `
-                <div class="bg-[#d4af37] text-[#0f0f0f] rounded-2xl rounded-tr-none px-4 py-3 text-sm max-w-[78%]">
-                    ${text}
-                </div>
-            `;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bg-[#d4af37] text-[#0f0f0f] rounded-2xl rounded-tr-none px-4 py-3 text-sm max-w-[78%]';
+            bubble.textContent = text;
+
+            msgDiv.appendChild(bubble);
             messages.appendChild(msgDiv);
             messages.scrollTop = messages.scrollHeight;
         }
         
         function showQuickReplies() {
             const container = document.getElementById('quick-replies');
-            container.innerHTML = `
-                <button onclick="quickReply('Tell me about yourself')" class="quick-reply text-xs px-3 py-1.5 bg-[#1a1a1a] hover:bg-[#d4af37] hover:text-[#0f0f0f] rounded-full border border-[#d4af37]/30 text-[#f5f5f0]/80">About Ralph</button>
-                <button onclick="quickReply('What are your skills')" class="quick-reply text-xs px-3 py-1.5 bg-[#1a1a1a] hover:bg-[#d4af37] hover:text-[#0f0f0f] rounded-full border border-[#d4af37]/30 text-[#f5f5f0]/80">Skills</button>
-                <button onclick="quickReply('What projects have you worked on')" class="quick-reply text-xs px-3 py-1.5 bg-[#1a1a1a] hover:bg-[#d4af37] hover:text-[#0f0f0f] rounded-full border border-[#d4af37]/30 text-[#f5f5f0]/80">Projects</button>
-            `;
+            container.innerHTML = '';
+            QUICK_REPLIES.forEach(reply => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'quick-reply text-xs px-3 py-1.5 bg-[#1a1a1a] hover:bg-[#d4af37] hover:text-[#0f0f0f] rounded-full border border-[#d4af37]/30 text-[#f5f5f0]/80';
+                button.textContent = reply.label;
+                button.addEventListener('click', () => quickReply(reply.text));
+                container.appendChild(button);
+            });
         }
-        
+
         function quickReply(question) {
+            if (chatLoading) return;
             addUserMessage(question);
             document.getElementById('quick-replies').innerHTML = '';
             sendToGroqAPI(question);
@@ -994,6 +1190,7 @@ IMPORTANT FORMATTING:
         
         async function sendToGroqAPI(userMessage) {
             const messagesContainer = document.getElementById('chat-messages');
+            setChatLoading(true);
             
             // Anti-spam check
             if (userMessage.toLowerCase() === lastMessage.toLowerCase()) {
@@ -1004,6 +1201,7 @@ IMPORTANT FORMATTING:
                     
                     addBotMessage(`Please don't spam the same message. ${getRandomSpamJoke()}`);
                     showQuickReplies();
+                    setChatLoading(false);
                     return;
                 }
             } else {
@@ -1035,27 +1233,31 @@ IMPORTANT FORMATTING:
                     body: JSON.stringify({ message: userMessage })
                 });
 
-                const data = await response.json();
+                const data = await response.json().catch(() => ({}));
                 const typing = document.getElementById('typing-indicator');
                 if (typing) typing.remove();
 
-                if (data.choices && data.choices[0]) {
-                    addBotMessage(data.choices[0].message.content);
+                if (!response.ok) {
+                    addBotMessage(data.error || "Sorry, I'm having trouble right now.");
                 } else {
-                    addBotMessage("Sorry, I'm having trouble right now.");
+                    const reply = data.reply || data.choices?.[0]?.message?.content;
+                    addBotMessage(reply || "Sorry, I'm having trouble right now.");
                 }
                 
                 showQuickReplies();
+                setChatLoading(false);
 
             } catch (error) {
                 const typing = document.getElementById('typing-indicator');
                 if (typing) typing.remove();
                 addBotMessage("Sorry, I'm having trouble connecting right now.");
                 showQuickReplies();
+                setChatLoading(false);
             }
         }
-        
+
         function sendMessage() {
+            if (chatLoading) return;
             const input = document.getElementById('chat-input');
             const value = input.value.trim();
             if (!value) return;
@@ -1066,7 +1268,26 @@ IMPORTANT FORMATTING:
             sendToGroqAPI(value);
         }
         
+        function setChatLoading(isLoading) {
+            chatLoading = isLoading;
+            const input = document.getElementById('chat-input');
+            const button = document.getElementById('chat-send');
+            input.disabled = isLoading;
+            button.disabled = isLoading;
+            button.classList.toggle('opacity-60', isLoading);
+            button.classList.toggle('cursor-not-allowed', isLoading);
+        }
+
         function initChatbot() {
+            document.getElementById('chatbot-button').addEventListener('click', toggleChatbot);
+            document.getElementById('chatbot-close').addEventListener('click', toggleChatbot);
+            document.getElementById('chat-send').addEventListener('click', sendMessage);
+            document.getElementById('chat-input').addEventListener('keydown', event => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
             console.log('%c[Chatbot] Strict mode + Anti-spam enabled', 'color:#d4af37');
         }
         
@@ -1146,8 +1367,20 @@ IMPORTANT FORMATTING:
             ).join('');
             
             document.getElementById('modal-role').innerHTML = project.role;
-            document.getElementById('modal-live-link').href = project.liveLink;
-            document.getElementById('modal-github-link').href = project.githubLink;
+            setProjectLink(document.getElementById('modal-live-link'), project.liveLink);
+            setProjectLink(document.getElementById('modal-github-link'), project.githubLink);
+        }
+
+        function setProjectLink(link, href) {
+            if (href && href !== '#') {
+                link.href = href;
+                link.classList.remove('hidden');
+                link.removeAttribute('aria-disabled');
+            } else {
+                link.href = '#';
+                link.classList.add('hidden');
+                link.setAttribute('aria-disabled', 'true');
+            }
         }
         
         function hideProjectModal() {
@@ -1155,32 +1388,81 @@ IMPORTANT FORMATTING:
             modal.style.display = 'none';
             document.body.style.overflow = 'visible';
         }
+
+        function initButtons() {
+            document.getElementById('enter-portfolio-btn').addEventListener('click', enterPortfolio);
+            document.getElementById('back-to-top').addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            document.querySelectorAll('[data-project-index]').forEach(card => {
+                const openProject = () => showProjectModal(Number(card.dataset.projectIndex));
+                card.addEventListener('click', openProject);
+                card.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openProject();
+                    }
+                });
+            });
+
+            const modal = document.getElementById('project-modal');
+            modal.addEventListener('click', event => {
+                if (event.target === modal) hideProjectModal();
+            });
+            document.getElementById('modal-close').addEventListener('click', hideProjectModal);
+        }
         
         function initContactForm() {
             const form = document.getElementById('contact-form');
+            const message = document.getElementById('message');
+            const count = document.getElementById('char-count');
             const toast = document.createElement('div');
             toast.id = 'success-toast';
             toast.className = 'hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#111111] border border-[#d4af37]/40 px-8 py-4 rounded-2xl items-center gap-x-4 shadow-2xl';
             toast.innerHTML = `
                 <div class="text-[#d4af37]">
-                    <i class="fas fa-check-circle text-2xl"></i>
+                    <i class="fas fa-envelope-open-text text-2xl"></i>
                 </div>
                 <div>
-                    <div class="font-medium">Thank you! Your message has been sent.</div>
-                    <div class="text-xs text-[#f5f5f0]/60">I’ll get back to you within 48 hours.</div>
+                    <div class="font-medium">Email draft prepared.</div>
+                    <div class="text-xs text-[#f5f5f0]/60">Send it from your email app to reach Ralph.</div>
                 </div>
             `;
             document.body.appendChild(toast);
+
+            message.addEventListener('input', () => {
+                count.textContent = `${message.value.length} / 500`;
+            });
             
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const btn = form.querySelector('button');
                 const original = btn.innerHTML;
-                btn.innerHTML = `<span class="flex items-center justify-center gap-x-2"><i class="fas fa-spinner fa-spin"></i> SENDING...</span>`;
+                const formData = new FormData(form);
+                const name = String(formData.get('name') || '').trim();
+                const email = String(formData.get('email') || '').trim();
+                const body = String(formData.get('message') || '').trim();
+
+                if (!name || !email || !body) {
+                    form.reportValidity();
+                    return;
+                }
+
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    form.reportValidity();
+                    return;
+                }
+
+                btn.innerHTML = `<span class="flex items-center justify-center gap-x-2"><i class="fas fa-spinner fa-spin"></i> PREPARING...</span>`;
                 btn.disabled = true;
                 
                 setTimeout(() => {
+                    const subject = encodeURIComponent(`Portfolio inquiry from ${name}`);
+                    const mailBody = encodeURIComponent(`${body}\n\nFrom: ${name}\nEmail: ${email}`);
+                    window.location.href = `mailto:hiimralphhh@gmail.com?subject=${subject}&body=${mailBody}`;
                     form.reset();
+                    count.textContent = '0 / 500';
                     btn.innerHTML = original;
                     btn.disabled = false;
                     toast.style.display = 'flex';
@@ -1216,6 +1498,7 @@ IMPORTANT FORMATTING:
             initPreloader();
             initNavbar();
             initProgressBars();
+            initButtons();
             initContactForm();
             initSmoothScroll();
             initChatbot();
@@ -1230,6 +1513,7 @@ IMPORTANT FORMATTING:
                     } else if (!chat.classList.contains('hidden') && chat.style.display !== 'none') {
                         chat.style.display = 'none';
                         chatOpen = false;
+                        document.getElementById('chatbot-button').setAttribute('aria-expanded', 'false');
                     }
                 }
             });
